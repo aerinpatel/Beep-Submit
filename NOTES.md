@@ -44,3 +44,12 @@ This document records issues, root causes, and fixes encountered during the buil
 - **Fix**: Added a legal suffix normalization pass in `lib/normalizer.ts` (`normalizeCompany`) that removes common corporate designations (`inc`, `llc`, `ltd`, `pvt`, `technologies`, `solutions`, etc.) before computing the SHA-256 content hash, guaranteeing deterministic duplicate matching across sources.
 
 ---
+
+### Issue 5: Windows Host Service Collision with Docker PostgreSQL Port 5432
+
+- **Symptom**: Starting the Docker PostgreSQL container mapped to host port 5432 resulted in `password authentication failed for user "postgres"` when connecting from host scripts.
+- **What I tried**: Attempted connecting to `localhost:5432` with standard container credentials (`postgres/postgres`).
+- **Root cause**: A pre-existing Windows host service (`postgresql-x64-18`) was already running and intercepting requests routed to `127.0.0.1:5432`, blocking traffic from reaching the containerized database.
+- **Fix**: Remapped the Docker container's external port in `docker-compose.yml` to `5436:5432` (`beep-db`), while keeping the internal container network address as `db:5432`. Updated `.env` and verified both host scripts and container environments operate against the containerized database.
+
+---
