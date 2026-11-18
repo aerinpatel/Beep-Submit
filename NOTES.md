@@ -80,3 +80,25 @@ This document records issues, root causes, and fixes encountered during the buil
 - **Fix**: Converted all timestamp values to ISO 8601 strings (`new Date().toISOString()`) before passing them to SQL expressions. PostgreSQL natively parses ISO timestamp strings into its internal `TIMESTAMP` representation, preventing any Node.js driver hashing exceptions.
 
 ---
+
+### Issue 9: Pipeline Re-Run Deduplication Overwriting Primary Records (`is_duplicate_of = id`)
+
+- **Symptom**: After running the daily ingestion pipeline a second time, active job count on the UI plummeted from 419 to 4. Over 400 primary jobs were marked as duplicates with `is_duplicate_of` pointing to their own UUIDs (`is_duplicate_of = id`).
+- **What I tried**: Inspecting the `is_duplicate_of` values in PostgreSQL and comparing them against `id`.
+- **Root cause**: In `lib/dedupe.ts` (Layer 2 DB exact match), incoming posts were queried against `posts` via `WHERE canonical_url = ... OR content_hash = ...` without excluding the post's own record (`NOT (source = post.source AND source_id = post.sourceId)`). On re-runs, the database lookup matched the post's own existing primary row, assigned `isDuplicateOf = existingRow.id`, and on upsert set `is_duplicate_of` to its own ID.
+- **Fix**: 
+  1. Updated `lib/dedupe.ts` Layer 2 and Layer 3 SQL queries to explicitly exclude the candidate's existing record (`AND NOT (source = post.source AND source_id = post.sourceId)`).
+  2. Preserved previous duplicate status if a post was already legitimately linked to another root post.
+  3. Added an explicit guard in `lib/pipeline.ts` preventing `is_duplicate_of` from ever being set equal to `id`.
+  4. Executed `UPDATE posts SET is_duplicate_of = NULL WHERE is_duplicate_of = id;`, restoring all 419 primary active jobs.
+
+---
+
+### Issue 10: Groq Free Tier Tokens-Per-Minute (TPM) Rate Limit (HTTP 429) on Sequential Batches
+
+- **Symptom**: When tagging 23 consecutive batches of 15 posts (~3,500 tokens per batch), batches after the 2nd one threw `HTTP 429: Rate limit reached for model openai/gpt-oss-20b: Limit 8000, Used 7992`.
+- **What I tried**: Immediate 1-retry fallback without pacing.
+- **Root cause**: Groq's on-demand free tier enforces a strict 8,000 tokens-per-minute limit for `openai/gpt-oss-20b`. Two consecutive batches exhaust the per-minute quota immediately.
+- **Fix**: Relied on `contentHash` caching to retain tags across runs, and configured polite delays/backoff between LLM batch requests.
+
+---

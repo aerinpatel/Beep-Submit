@@ -17,7 +17,8 @@
     "dedupe:test": "tsx scripts/test-dedupe.ts",
     "tag:test": "tsx scripts/test-tagger.ts",
     "pipeline:run": "tsx scripts/run-pipeline.ts",
-    "cron:test": "tsx scripts/test-cron-route.ts"
+    "cron:test": "tsx scripts/test-cron-route.ts",
+    "ui:test": "tsx scripts/test-web-ui.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",

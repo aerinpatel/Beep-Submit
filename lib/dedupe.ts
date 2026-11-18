@@ -99,12 +99,13 @@ export async function deduplicatePosts(incomingPosts: NormalizedPost[]): Promise
 
     // -------------------------------------------------------------
     // LAYER 2: Exact Match (Database Lookups via canonical_url or content_hash)
+    // Exclude the post's own existing record to prevent self-duplication on re-runs
     // -------------------------------------------------------------
     const exactMatches = await client<Array<{ id: string; is_duplicate_of: string | null }>>`
       SELECT id, is_duplicate_of
       FROM posts
-      WHERE canonical_url = ${post.canonicalUrl}
-         OR content_hash = ${post.contentHash}
+      WHERE (canonical_url = ${post.canonicalUrl} OR content_hash = ${post.contentHash})
+        AND NOT (source = ${post.source} AND source_id = ${post.sourceId})
       LIMIT 1;
     `;
 
@@ -120,7 +121,7 @@ export async function deduplicatePosts(incomingPosts: NormalizedPost[]): Promise
 
     // -------------------------------------------------------------
     // LAYER 3: Fuzzy Match via pg_trgm (Database lookup within same company)
-    // Threshold defined in CONFIG (0.85)
+    // Threshold defined in CONFIG (0.85) - exclude self
     // -------------------------------------------------------------
     const threshold = CONFIG.dedupe.fuzzyTitleSimilarityThreshold;
 
@@ -129,6 +130,7 @@ export async function deduplicatePosts(incomingPosts: NormalizedPost[]): Promise
       FROM posts
       WHERE LOWER(company) = LOWER(${post.company})
         AND is_duplicate_of IS NULL
+        AND NOT (source = ${post.source} AND source_id = ${post.sourceId})
         AND similarity(title, ${post.title}) >= ${threshold}
       ORDER BY similarity DESC
       LIMIT 1;
@@ -140,6 +142,21 @@ export async function deduplicatePosts(incomingPosts: NormalizedPost[]): Promise
       seenContentHashes.set(post.contentHash, duplicateOf);
       counts.fuzzyDuplicates++;
       results.push({ ...post, isDuplicateOf: duplicateOf });
+      continue;
+    }
+
+    // Check if this post was already registered in DB with an existing duplicate link
+    const existingSelf = await client<Array<{ id: string; is_duplicate_of: string | null }>>`
+      SELECT id, is_duplicate_of
+      FROM posts
+      WHERE source = ${post.source} AND source_id = ${post.sourceId}
+      LIMIT 1;
+    `;
+
+    if (existingSelf.length > 0 && existingSelf[0].is_duplicate_of !== null && existingSelf[0].is_duplicate_of !== existingSelf[0].id) {
+      // Maintain previous duplicate link to root post
+      counts.exactDuplicates++;
+      results.push({ ...post, isDuplicateOf: existingSelf[0].is_duplicate_of });
       continue;
     }
 

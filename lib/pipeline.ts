@@ -118,7 +118,8 @@ async function upsertPostsToDatabase(
         is_fresher = COALESCE(EXCLUDED.is_fresher, posts.is_fresher),
         tag_confidence = COALESCE(EXCLUDED.tag_confidence, posts.tag_confidence),
         tagged_at = COALESCE(EXCLUDED.tagged_at, posts.tagged_at),
-        model_version = COALESCE(EXCLUDED.model_version, posts.model_version)
+        model_version = COALESCE(EXCLUDED.model_version, posts.model_version),
+        is_duplicate_of = NULL
       RETURNING id;
     `;
 
@@ -169,7 +170,10 @@ async function upsertPostsToDatabase(
         location_raw = EXCLUDED.location_raw,
         description = EXCLUDED.description,
         content_hash = EXCLUDED.content_hash,
-        is_duplicate_of = COALESCE(EXCLUDED.is_duplicate_of, posts.is_duplicate_of)
+        is_duplicate_of = CASE 
+          WHEN EXCLUDED.is_duplicate_of = posts.id THEN NULL 
+          ELSE EXCLUDED.is_duplicate_of 
+        END
       RETURNING id;
     `;
 
