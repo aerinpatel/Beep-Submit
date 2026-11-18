@@ -62,3 +62,12 @@ This document records issues, root causes, and fixes encountered during the buil
 - **Fix**: Refactored `scripts/seed.ts` to import `computeContentHash` directly from `lib/normalizer.ts` and re-seeded the database, ensuring strict hash parity between the pipeline and seed records.
 
 ---
+
+### Issue 7: LLM Response Markdown Wrapping in JSON Mode
+
+- **Symptom**: When requesting structured JSON output from LLMs with `response_format: { type: "json_object" }`, certain models wrap the response in markdown code fences (`\`\`\`json ... \`\`\``), which causes standard `JSON.parse` to throw a `SyntaxError: Unexpected token '`'` error.
+- **What I tried**: Relying solely on `response_format: { type: "json_object" }`.
+- **Root cause**: Open-source models (including `gpt-oss-20b` and Llama variants) frequently prepend and append markdown code fences in their chat completions.
+- **Fix**: Added a resilient sanitizer in `lib/tagger/index.ts` that strips leading and trailing markdown backticks (`\`\`\`json ... \`\`\``) prior to JSON parsing and Zod schema validation, with an automated 1-retry fallback.
+
+---
