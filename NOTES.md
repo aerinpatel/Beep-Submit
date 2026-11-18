@@ -53,3 +53,12 @@ This document records issues, root causes, and fixes encountered during the buil
 - **Fix**: Remapped the Docker container's external port in `docker-compose.yml` to `5436:5432` (`beep-db`), while keeping the internal container network address as `db:5432`. Updated `.env` and verified both host scripts and container environments operate against the containerized database.
 
 ---
+
+### Issue 6: Content Hash Discrepancy Between Seed Script & Canonical Normalizer
+
+- **Symptom**: During Chunk 4 deduplication testing, incoming exact duplicate jobs matched via `canonicalUrl` but failed exact match on `contentHash` against records created by the seed script.
+- **What I tried**: Checked `contentHash` values in Postgres vs those produced by `normalizePost`.
+- **Root cause**: `scripts/seed.ts` contained an ad-hoc local `hashContent` helper rather than importing the canonical `computeContentHash` from `lib/normalizer.ts`. When `lib/normalizer.ts` was enhanced in Chunk 3 to strip legal corporate suffixes and sanitize non-alphanumeric chars, the seed script's hashes became stale.
+- **Fix**: Refactored `scripts/seed.ts` to import `computeContentHash` directly from `lib/normalizer.ts` and re-seeded the database, ensuring strict hash parity between the pipeline and seed records.
+
+---

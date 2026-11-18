@@ -3,7 +3,7 @@
 
 import postgres from "postgres";
 import * as dotenv from "dotenv";
-import { createHash } from "crypto";
+import { computeContentHash } from "../lib/normalizer";
 
 dotenv.config();
 
@@ -15,12 +15,6 @@ if (!connectionString) {
 }
 
 const sql = postgres(connectionString, { max: 1 });
-
-function hashContent(company: string, title: string, city: string): string {
-  return createHash("sha256")
-    .update(`${company.toLowerCase().trim()}|${title.toLowerCase().trim()}|${city.toLowerCase().trim()}`)
-    .digest("hex");
-}
 
 async function seed() {
   console.log("🌱 Starting seed script...");
@@ -100,7 +94,7 @@ async function seed() {
     const insertedRows: Array<{ id: string; title: string }> = [];
 
     for (const p of samplePosts) {
-      const contentHash = hashContent(p.company, p.title, p.cityTag);
+      const contentHash = computeContentHash(p.company, p.title, p.cityTag);
       const [row] = await sql<Array<{ id: string; title: string }>>`
         INSERT INTO posts (
           source, source_id, url, canonical_url, title, company,
@@ -124,7 +118,7 @@ async function seed() {
     console.log("📝 Inserting fuzzy duplicate post to test pg_trgm...");
     const originalRazorpayId = insertedRows[0].id;
     const fuzzyTitle = "Software Engineer Intern - Backend";
-    const fuzzyHash = hashContent("Razorpay", fuzzyTitle, "Bangalore");
+    const fuzzyHash = computeContentHash("Razorpay", fuzzyTitle, "Bangalore");
 
     const [fuzzyRow] = await sql<Array<{ id: string }>>`
       INSERT INTO posts (
