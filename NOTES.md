@@ -71,3 +71,12 @@ This document records issues, root causes, and fixes encountered during the buil
 - **Fix**: Added a resilient sanitizer in `lib/tagger/index.ts` that strips leading and trailing markdown backticks (`\`\`\`json ... \`\`\``) prior to JSON parsing and Zod schema validation, with an automated 1-retry fallback.
 
 ---
+
+### Issue 8: Node.js v22 Crypto Hashing Failure on JavaScript Date Objects in SQL Driver
+
+- **Symptom**: Stage 5 (Postgres Upsert) failed with `FATAL PIPELINE FAILURE: The "string" argument must be of type string or an instance of Buffer or ArrayBuffer. Received an instance of Date`.
+- **What I tried**: Passing native JavaScript `new Date()` instances directly into tagged template SQL expressions `${new Date()}`.
+- **Root cause**: In Node.js v22, `postgres.js` hashes prepared query statement parameter values using `crypto.createHash().update(val)`. Passing non-string, non-buffer objects (such as `Date`) into `crypto.createHash().update()` triggers a strict TypeError in Node v22.
+- **Fix**: Converted all timestamp values to ISO 8601 strings (`new Date().toISOString()`) before passing them to SQL expressions. PostgreSQL natively parses ISO timestamp strings into its internal `TIMESTAMP` representation, preventing any Node.js driver hashing exceptions.
+
+---

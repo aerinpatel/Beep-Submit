@@ -15,7 +15,8 @@
     "fetch:test": "tsx scripts/test-fetchers.ts",
     "normalize:test": "tsx scripts/test-normalizer.ts",
     "dedupe:test": "tsx scripts/test-dedupe.ts",
-    "tag:test": "tsx scripts/test-tagger.ts"
+    "tag:test": "tsx scripts/test-tagger.ts",
+    "pipeline:run": "tsx scripts/run-pipeline.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
