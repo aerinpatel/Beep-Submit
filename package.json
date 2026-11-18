@@ -16,7 +16,8 @@
     "normalize:test": "tsx scripts/test-normalizer.ts",
     "dedupe:test": "tsx scripts/test-dedupe.ts",
     "tag:test": "tsx scripts/test-tagger.ts",
-    "pipeline:run": "tsx scripts/run-pipeline.ts"
+    "pipeline:run": "tsx scripts/run-pipeline.ts",
+    "cron:test": "tsx scripts/test-cron-route.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
