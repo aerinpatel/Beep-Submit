@@ -18,7 +18,10 @@
     "tag:test": "tsx scripts/test-tagger.ts",
     "pipeline:run": "tsx scripts/run-pipeline.ts",
     "cron:test": "tsx scripts/test-cron-route.ts",
-    "ui:test": "tsx scripts/test-web-ui.ts"
+    "ui:test": "tsx scripts/test-web-ui.ts",
+    "eval:sample": "tsx scripts/eval-sample.ts",
+    "eval:score": "tsx scripts/eval-score.ts",
+    "cost:report": "tsx scripts/cost-report.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
