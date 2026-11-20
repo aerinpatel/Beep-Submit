@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { client } from "@/lib/db";
 import { Search, RotateCcw } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { SearchFilters } from "@/components/SearchFilters";
-import { JobCard, type JobPostItem } from "@/components/JobCard";
+import { JobCard } from "@/components/JobCard";
 import { Pagination } from "@/components/Pagination";
 import { Footer } from "@/components/Footer";
+import { getJobs } from "@/lib/db/jobs";
 
 // Server-side rendering - force dynamic since searchParams change per request
 export const dynamic = "force-dynamic";
@@ -20,71 +20,23 @@ interface PageProps {
   };
 }
 
-interface LatestRunInfo {
-  startedAt: string;
-  status: string;
-}
-
 export default async function Page({ searchParams }: PageProps) {
   const q = typeof searchParams.q === "string" ? searchParams.q.trim() : "";
   const role = typeof searchParams.role === "string" ? searchParams.role.trim() : "";
   const city = typeof searchParams.city === "string" ? searchParams.city.trim() : "";
   const page = Math.max(1, parseInt(searchParams.page || "1", 10) || 1);
   const pageSize = 15;
+
+  // Query jobs and latest pipeline status via Prisma ORM
+  const { posts, totalJobs, totalPages, latestRun, error: dbError } = await getJobs({
+    q,
+    role,
+    city,
+    page,
+    pageSize,
+  });
+
   const offset = (page - 1) * pageSize;
-
-  let totalJobs = 0;
-  let totalPages = 1;
-  let posts: JobPostItem[] = [];
-  let latestRun: LatestRunInfo | undefined;
-  let dbError: string | null = null;
-
-  try {
-    // 1. Fetch total count matching query & filters (excluding duplicates and stale posts)
-    const countQuery = await client`
-      SELECT COUNT(*)::int as total
-      FROM posts
-      WHERE is_duplicate_of IS NULL
-        AND last_seen_at >= NOW() - INTERVAL '7 days'
-        ${q ? client`AND search_vector @@ websearch_to_tsquery('english', ${q})` : client``}
-        ${role && role !== "all" ? client`AND role_tag = ${role}` : client``}
-        ${city && city !== "all" ? client`AND city_tag = ${city}` : client``}
-    `;
-    totalJobs = countQuery[0]?.total ?? 0;
-    totalPages = Math.max(1, Math.ceil(totalJobs / pageSize));
-
-    // 2. Fetch paginated job posts
-    posts = (await client`
-      SELECT
-        id, source, source_id, url, canonical_url, title, company,
-        location_raw, description, posted_at, first_seen_at, last_seen_at,
-        role_tag, city_tag, is_fresher, tag_confidence
-        ${q ? client`, ts_rank(search_vector, websearch_to_tsquery('english', ${q})) as rank` : client``}
-      FROM posts
-      WHERE is_duplicate_of IS NULL
-        AND last_seen_at >= NOW() - INTERVAL '7 days'
-        ${q ? client`AND search_vector @@ websearch_to_tsquery('english', ${q})` : client``}
-        ${role && role !== "all" ? client`AND role_tag = ${role}` : client``}
-        ${city && city !== "all" ? client`AND city_tag = ${city}` : client``}
-      ORDER BY
-        ${q ? client`rank DESC, first_seen_at DESC` : client`COALESCE(posted_at, first_seen_at) DESC`}
-      LIMIT ${pageSize} OFFSET ${offset}
-    `) as unknown as JobPostItem[];
-
-    // 3. Fetch latest pipeline run information
-    const [run] = (await client`
-      SELECT started_at, status
-      FROM runs
-      WHERE status IN ('success', 'partial')
-      ORDER BY started_at DESC
-      LIMIT 1
-    `) as unknown as [LatestRunInfo | undefined];
-    latestRun = run;
-  } catch (err: unknown) {
-    dbError = (err as Error)?.message || "Failed to connect to database";
-    console.error("[Web UI] Database error during page render:", dbError);
-  }
-
   const hasActiveFilters = Boolean(q || (role && role !== "all") || (city && city !== "all"));
   const startPostIndex = totalJobs === 0 ? 0 : offset + 1;
   const endPostIndex = Math.min(offset + pageSize, totalJobs);
@@ -158,7 +110,7 @@ export default async function Page({ searchParams }: PageProps) {
           </div>
         )}
 
-        {/* Pagination Bar */}
+        {/* Pagination Controls */}
         <Pagination page={page} totalPages={totalPages} q={q} role={role} city={city} />
       </main>
 

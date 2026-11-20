@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  source        String
+  sourceId      String    @map("source_id")
+  url           String
+  canonicalUrl  String    @map("canonical_url")
+  title         String
+  company       String
+  locationRaw   String    @map("location_raw")
+  description   String
+  contentHash   String    @map("content_hash")
+  postedAt      DateTime? @map("posted_at") @db.Timestamp(6)
+  firstSeenAt   DateTime  @default(now()) @map("first_seen_at") @db.Timestamp(6)
+  lastSeenAt    DateTime  @default(now()) @map("last_seen_at") @db.Timestamp(6)
+
+  roleTag       String?   @map("role_tag")
+  cityTag       String?   @map("city_tag")
+  isFresher     Boolean   @default(false) @map("is_fresher")
+  tagConfidence Float?    @map("tag_confidence") @db.Real
+  taggedAt      DateTime? @map("tagged_at") @db.Timestamp(6)
+  modelVersion  String?   @map("model_version")
+
+  isDuplicateOf String?   @map("is_duplicate_of") @db.Uuid
+  searchVector  Unsupported("tsvector")? @default(dbgenerated("to_tsvector('english'::regconfig, ((((((COALESCE(title, ''::text) || ' '::text) || COALESCE(company, ''::text)) || ' '::text) || COALESCE(location_raw, ''::text)) || ' '::text) || COALESCE(description, ''::text)))")) @map("search_vector")
+
+  parentPost     Post?    @relation("PostDuplicates", fields: [isDuplicateOf], references: [id], onUpdate: NoAction)
+  duplicatePosts Post[]   @relation("PostDuplicates")
+
+  @@unique([source, sourceId], map: "posts_source_source_id_idx")
+  @@index([canonicalUrl])
+  @@index([company])
+  @@index([contentHash])
+  @@index([isDuplicateOf])
+  @@index([lastSeenAt])
+  @@index([searchVector], type: Gin)
+  @@index([title(ops: raw("gin_trgm_ops"))], map: "posts_title_trgm_idx", type: Gin)
+  @@map("posts")
+}
+
+model Run {
+  id          String    @id
+  startedAt   DateTime  @default(now()) @map("started_at") @db.Timestamp(6)
+  finishedAt  DateTime? @map("finished_at") @db.Timestamp(6)
+  status      String
+  stageCounts Json      @map("stage_counts")
+  errorLog    String?   @map("error_log")
+
+  @@map("runs")
+}
+
+model LlmUsage {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  runId        String   @map("run_id")
+  model        String
+  inputTokens  Int      @map("input_tokens")
+  outputTokens Int      @map("output_tokens")
+  postCount    Int      @map("post_count")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([createdAt])
+  @@index([runId])
+  @@map("llm_usage")
+}
