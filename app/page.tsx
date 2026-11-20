@@ -151,45 +151,57 @@ export default async function Page({ searchParams }: PageProps) {
   const pageSize = 15;
   const offset = (page - 1) * pageSize;
 
-  // 1. Fetch total count matching query & filters (excluding duplicates and stale posts)
-  const countQuery = await client`
-    SELECT COUNT(*)::int as total
-    FROM posts
-    WHERE is_duplicate_of IS NULL
-      AND last_seen_at >= NOW() - INTERVAL '7 days'
-      ${q ? client`AND search_vector @@ websearch_to_tsquery('english', ${q})` : client``}
-      ${role && role !== "all" ? client`AND role_tag = ${role}` : client``}
-      ${city && city !== "all" ? client`AND city_tag = ${city}` : client``}
-  `;
-  const totalJobs = countQuery[0]?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(totalJobs / pageSize));
+  let totalJobs = 0;
+  let totalPages = 1;
+  let posts: JobPost[] = [];
+  let latestRun: LatestRunInfo | undefined;
+  let dbError: string | null = null;
 
-  // 2. Fetch paginated job posts
-  const posts = (await client`
-    SELECT
-      id, source, source_id, url, canonical_url, title, company,
-      location_raw, description, posted_at, first_seen_at, last_seen_at,
-      role_tag, city_tag, is_fresher, tag_confidence
-      ${q ? client`, ts_rank(search_vector, websearch_to_tsquery('english', ${q})) as rank` : client``}
-    FROM posts
-    WHERE is_duplicate_of IS NULL
-      AND last_seen_at >= NOW() - INTERVAL '7 days'
-      ${q ? client`AND search_vector @@ websearch_to_tsquery('english', ${q})` : client``}
-      ${role && role !== "all" ? client`AND role_tag = ${role}` : client``}
-      ${city && city !== "all" ? client`AND city_tag = ${city}` : client``}
-    ORDER BY
-      ${q ? client`rank DESC, first_seen_at DESC` : client`COALESCE(posted_at, first_seen_at) DESC`}
-    LIMIT ${pageSize} OFFSET ${offset}
-  `) as unknown as JobPost[];
+  try {
+    // 1. Fetch total count matching query & filters (excluding duplicates and stale posts)
+    const countQuery = await client`
+      SELECT COUNT(*)::int as total
+      FROM posts
+      WHERE is_duplicate_of IS NULL
+        AND last_seen_at >= NOW() - INTERVAL '7 days'
+        ${q ? client`AND search_vector @@ websearch_to_tsquery('english', ${q})` : client``}
+        ${role && role !== "all" ? client`AND role_tag = ${role}` : client``}
+        ${city && city !== "all" ? client`AND city_tag = ${city}` : client``}
+    `;
+    totalJobs = countQuery[0]?.total ?? 0;
+    totalPages = Math.max(1, Math.ceil(totalJobs / pageSize));
 
-  // 3. Fetch latest pipeline run information
-  const [latestRun] = (await client`
-    SELECT started_at, status
-    FROM runs
-    WHERE status IN ('success', 'partial')
-    ORDER BY started_at DESC
-    LIMIT 1
-  `) as unknown as [LatestRunInfo | undefined];
+    // 2. Fetch paginated job posts
+    posts = (await client`
+      SELECT
+        id, source, source_id, url, canonical_url, title, company,
+        location_raw, description, posted_at, first_seen_at, last_seen_at,
+        role_tag, city_tag, is_fresher, tag_confidence
+        ${q ? client`, ts_rank(search_vector, websearch_to_tsquery('english', ${q})) as rank` : client``}
+      FROM posts
+      WHERE is_duplicate_of IS NULL
+        AND last_seen_at >= NOW() - INTERVAL '7 days'
+        ${q ? client`AND search_vector @@ websearch_to_tsquery('english', ${q})` : client``}
+        ${role && role !== "all" ? client`AND role_tag = ${role}` : client``}
+        ${city && city !== "all" ? client`AND city_tag = ${city}` : client``}
+      ORDER BY
+        ${q ? client`rank DESC, first_seen_at DESC` : client`COALESCE(posted_at, first_seen_at) DESC`}
+      LIMIT ${pageSize} OFFSET ${offset}
+    `) as unknown as JobPost[];
+
+    // 3. Fetch latest pipeline run information
+    const [run] = (await client`
+      SELECT started_at, status
+      FROM runs
+      WHERE status IN ('success', 'partial')
+      ORDER BY started_at DESC
+      LIMIT 1
+    `) as unknown as [LatestRunInfo | undefined];
+    latestRun = run;
+  } catch (err: unknown) {
+    dbError = (err as Error)?.message || "Failed to connect to database";
+    console.error("[Web UI] Database error during page render:", dbError);
+  }
 
   // 4. Determine if any filters are active
   const hasActiveFilters = Boolean(q || (role && role !== "all") || (city && city !== "all"));
@@ -282,6 +294,24 @@ export default async function Page({ searchParams }: PageProps) {
 
       {/* Main Content Area */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        {/* Database Offline Notice (if connection drops) */}
+        {dbError && (
+          <div className="mb-6 bg-[#FEF3C7] border border-[#F59E0B]/40 rounded-3xl p-5 text-[#92400E] text-sm font-medium flex items-start gap-3 shadow-xs">
+            <div className="w-6 h-6 rounded-full bg-[#F59E0B] text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+              !
+            </div>
+            <div>
+              <p className="font-bold text-base text-[#78350F]">Database Connection Required</p>
+              <p className="mt-1 text-xs sm:text-sm text-[#92400E]">
+                Unable to reach the PostgreSQL container on port 5436 ({dbError}). Please start it by running:
+              </p>
+              <pre className="mt-2 inline-block bg-white/80 border border-[#F59E0B]/30 px-3 py-1.5 rounded-xl font-mono text-xs font-bold text-[#78350F]">
+                docker compose up -d db
+              </pre>
+            </div>
+          </div>
+        )}
+
         {/* Retro Search & Filter Bar */}
         <div className="bg-[#FAF6EE] rounded-3xl border border-[#DFD6C6] p-4 sm:p-6 mb-7 shadow-xs">
           <form method="GET" action="/" className="space-y-4">
