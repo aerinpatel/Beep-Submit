@@ -15,6 +15,7 @@ import {
   ChevronRight,
   CheckCircle2,
   Layers,
+  Compass,
 } from "lucide-react";
 
 // Server-side rendering - force dynamic since searchParams change per request
@@ -91,41 +92,41 @@ function formatRelativeRunTime(dateStr: string | null | undefined): string {
 }
 
 /**
- * Color classes for role badges
+ * Modern Retro color classes for role badges
  */
 function getRoleBadgeClasses(role: string | null): string {
   switch (role) {
     case "Software Engineering":
-      return "bg-blue-50 text-blue-700 border-blue-200";
+      return "bg-[#E8F2EA] text-[#1E4D2B] border-[#BED6C3]";
     case "Data/ML":
-      return "bg-purple-50 text-purple-700 border-purple-200";
+      return "bg-[#EDE9FE] text-[#5B21B6] border-[#DDD6FE]";
     case "Design":
-      return "bg-pink-50 text-pink-700 border-pink-200";
+      return "bg-[#FDF0EC] text-[#9E3E22] border-[#F4CCC1]";
     case "Marketing":
-      return "bg-amber-50 text-amber-700 border-amber-200";
+      return "bg-[#FEF7D6] text-[#78590A] border-[#ECD788]";
     case "Sales":
-      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      return "bg-[#E2F7EB] text-[#136A3C] border-[#B7E8C8]";
     case "Operations":
-      return "bg-cyan-50 text-cyan-700 border-cyan-200";
+      return "bg-[#E0F2FE] text-[#0369A1] border-[#BAE6FD]";
     case "Finance":
-      return "bg-teal-50 text-teal-700 border-teal-200";
+      return "bg-[#F3F4D8] text-[#4D5A12] border-[#D6DB9A]";
     case "Content":
-      return "bg-orange-50 text-orange-700 border-orange-200";
+      return "bg-[#FFEDD5] text-[#9A3412] border-[#FED7AA]";
     case "HR":
-      return "bg-rose-50 text-rose-700 border-rose-200";
+      return "bg-[#FFE4E6] text-[#9F1239] border-[#FECDD3]";
     default:
-      return "bg-slate-100 text-slate-700 border-slate-200";
+      return "bg-[#F2ECE1] text-[#554C40] border-[#DDD3C2]";
   }
 }
 
 /**
- * Color classes for city badges
+ * Modern Retro color classes for city badges
  */
 function getCityBadgeClasses(city: string | null): string {
   if (city === "Remote") {
-    return "bg-indigo-50 text-indigo-700 border-indigo-200";
+    return "bg-[#EBF7F0] text-[#1E5D34] border-[#BDDFCA]";
   }
-  return "bg-emerald-50 text-emerald-700 border-emerald-200";
+  return "bg-[#FAF3E8] text-[#524434] border-[#E2D5C3]";
 }
 
 /**
@@ -197,38 +198,38 @@ export default async function Page({ searchParams }: PageProps) {
   const endPostIndex = Math.min(offset + pageSize, totalJobs);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
-      {/* Top Banner */}
-      <header className="border-b border-slate-200 bg-white sticky top-0 z-30 shadow-xs">
+    <div className="min-h-screen bg-[#FBF8F2] text-[#24211D] flex flex-col font-sans selection:bg-[#1E4D2B] selection:text-white">
+      {/* Retro Navigation Header */}
+      <header className="border-b border-[#E3DACB] bg-[#F7F2E7]/95 backdrop-blur-sm sticky top-0 z-30 shadow-xs">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 group">
-              <span className="w-8 h-8 rounded-lg bg-indigo-600 text-white font-black text-lg flex items-center justify-center shadow-xs group-hover:bg-indigo-700 transition-colors">
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <span className="w-9 h-9 rounded-2xl bg-[#1E4D2B] text-[#FDFBF7] font-black text-xl flex items-center justify-center shadow-[2px_2px_0px_#0B2F1B] group-hover:scale-105 transition-transform">
                 B
               </span>
               <div>
-                <span className="text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors">
+                <span className="text-2xl font-black tracking-tight text-[#1C1917] group-hover:text-[#1E4D2B] transition-colors">
                   Beep
                 </span>
-                <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 ml-1.5 px-1.5 py-0.5 rounded bg-indigo-50 border border-indigo-100">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#1E4D2B] ml-2 px-2 py-0.5 rounded-full bg-[#E8F2EA] border border-[#BED6C3]">
                   Freshers
                 </span>
               </div>
             </Link>
-            <span className="hidden sm:inline-block text-slate-300">|</span>
-            <span className="hidden sm:inline-block text-xs font-medium text-slate-500">
-              India Early Career &amp; Internships
+            <span className="hidden sm:inline-block text-[#D1C7B7]">|</span>
+            <span className="hidden sm:inline-block text-xs font-semibold text-[#665D4F]">
+              Early Career &amp; Internships • India
             </span>
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-slate-500 self-end sm:self-center">
-            <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full border border-emerald-200 font-medium">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Live Sync</span>
+          <div className="flex items-center gap-3 text-xs self-end sm:self-center font-medium">
+            <div className="flex items-center gap-1.5 bg-[#E8F2EA] text-[#1E4D2B] px-3 py-1 rounded-full border border-[#BED6C3] font-bold shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-[#2D6A4F] animate-pulse" />
+              <span>Live Ingest</span>
             </div>
             {latestRun && (
-              <div className="flex items-center gap-1 text-slate-500">
-                <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <div className="flex items-center gap-1.5 text-[#665D4F] bg-[#EFE9DC] px-2.5 py-1 rounded-full border border-[#DDD3C2]">
+                <Clock className="w-3.5 h-3.5 text-[#1E4D2B]" />
                 <span>Updated {formatRelativeRunTime(latestRun.startedAt)}</span>
               </div>
             )}
@@ -236,36 +237,44 @@ export default async function Page({ searchParams }: PageProps) {
         </div>
       </header>
 
-      {/* Hero & Highlights */}
-      <section className="bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-7">
+      {/* Hero Section */}
+      <section className="bg-[#FAF6EE] border-b border-[#E3DACB] relative overflow-hidden">
+        {/* Subtle retro backdrop accents */}
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 rounded-full bg-[#E8F2EA]/40 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 -mb-10 w-48 h-48 rounded-full bg-[#FEF7D6]/30 blur-2xl pointer-events-none" />
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-9 pb-8 relative z-10">
           <div className="max-w-3xl">
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F2EA] text-[#1E4D2B] border border-[#BED6C3] text-xs font-bold uppercase tracking-wider mb-3">
+              <Compass className="w-3.5 h-3.5" />
+              Direct Public ATS Postings Only
+            </div>
+            <h1 className="text-3xl sm:text-5xl font-black text-[#1C1917] tracking-tight leading-[1.15]">
               Curated Fresher &amp; Internship Jobs in India
             </h1>
-            <p className="mt-2 text-base sm:text-lg text-slate-600 leading-relaxed">
-              Real 0-1 year &amp; internship roles fetched daily from verified public ATS boards (Greenhouse, Lever, Ashby).
-              Filtered, deduplicated, and LLM-tagged.
+            <p className="mt-3 text-base sm:text-lg text-[#5A5144] leading-relaxed font-medium">
+              Handcrafted 0–1 year and internship listings fetched daily from verified public ATS boards (Greenhouse, Lever, Ashby).
+              Deduplicated with pg_trgm &amp; LLM-tagged.
             </p>
           </div>
 
-          {/* Quick Metrics Bar */}
-          <div className="mt-6 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs sm:text-sm text-slate-600 border-t border-slate-100 pt-4">
-            <div className="flex items-center gap-1.5 font-semibold text-slate-900">
-              <Briefcase className="w-4 h-4 text-indigo-600" />
+          {/* Retro Highlight Pills Bar */}
+          <div className="mt-7 flex flex-wrap items-center gap-2.5 text-xs sm:text-sm text-[#463E33]">
+            <div className="flex items-center gap-2 bg-[#FFFDF9] border border-[#DDD3C2] px-3.5 py-1.5 rounded-2xl shadow-xs font-bold text-[#1C1917]">
+              <Briefcase className="w-4 h-4 text-[#1E4D2B]" />
               <span>{totalJobs} Active Openings</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Layers className="w-4 h-4 text-emerald-600" />
+            <div className="flex items-center gap-2 bg-[#FFFDF9] border border-[#DDD3C2] px-3.5 py-1.5 rounded-2xl shadow-xs font-semibold">
+              <Layers className="w-4 h-4 text-[#2D6A4F]" />
               <span>Deduplicated in Layers</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-amber-500" />
+            <div className="flex items-center gap-2 bg-[#FFFDF9] border border-[#DDD3C2] px-3.5 py-1.5 rounded-2xl shadow-xs font-semibold">
+              <Sparkles className="w-4 h-4 text-[#B45309]" />
               <span>LLM Tagged (Role &amp; City)</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-blue-600" />
-              <span>Seen within last 7 days</span>
+            <div className="flex items-center gap-2 bg-[#FFFDF9] border border-[#DDD3C2] px-3.5 py-1.5 rounded-2xl shadow-xs font-semibold">
+              <CheckCircle2 className="w-4 h-4 text-[#1E4D2B]" />
+              <span>Active within 7 days</span>
             </div>
           </div>
         </div>
@@ -273,19 +282,19 @@ export default async function Page({ searchParams }: PageProps) {
 
       {/* Main Content Area */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
-        {/* Search & Filter Bar */}
-        <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-4 sm:p-5 mb-6">
-          <form method="GET" action="/" className="space-y-3.5">
+        {/* Retro Search & Filter Bar */}
+        <div className="bg-[#FAF6EE] rounded-3xl border border-[#DFD6C6] p-4 sm:p-6 mb-7 shadow-xs">
+          <form method="GET" action="/" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
               {/* Search Query Input */}
               <div className="md:col-span-5 relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C8070]" />
                 <input
                   type="text"
                   name="q"
                   defaultValue={q}
-                  placeholder="Search by title, skills, keywords... (e.g. Backend, React, Intern)"
-                  className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                  placeholder="Search keywords, skills, roles... (e.g. Backend, React, Intern)"
+                  className="w-full pl-11 pr-4 py-3 bg-[#FFFDF9] border border-[#D5CBBA] rounded-2xl text-sm font-medium text-[#24211D] placeholder:text-[#998D7C] focus:outline-none focus:border-[#1E4D2B] focus:ring-2 focus:ring-[#1E4D2B]/20 transition-all shadow-xs"
                 />
               </div>
 
@@ -294,7 +303,7 @@ export default async function Page({ searchParams }: PageProps) {
                 <select
                   name="role"
                   defaultValue={role || "all"}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer"
+                  className="w-full px-4 py-3 bg-[#FFFDF9] border border-[#D5CBBA] rounded-2xl text-sm font-medium text-[#24211D] focus:outline-none focus:border-[#1E4D2B] focus:ring-2 focus:ring-[#1E4D2B]/20 transition-all cursor-pointer shadow-xs"
                 >
                   <option value="all">All Roles (Any)</option>
                   {ROLES.map((r) => (
@@ -310,7 +319,7 @@ export default async function Page({ searchParams }: PageProps) {
                 <select
                   name="city"
                   defaultValue={city || "all"}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer"
+                  className="w-full px-4 py-3 bg-[#FFFDF9] border border-[#D5CBBA] rounded-2xl text-sm font-medium text-[#24211D] focus:outline-none focus:border-[#1E4D2B] focus:ring-2 focus:ring-[#1E4D2B]/20 transition-all cursor-pointer shadow-xs"
                 >
                   <option value="all">All Locations (Any)</option>
                   {CITIES.map((c) => (
@@ -321,11 +330,11 @@ export default async function Page({ searchParams }: PageProps) {
                 </select>
               </div>
 
-              {/* Search Submit Button */}
+              {/* Green Action Button */}
               <div className="md:col-span-1 flex items-stretch">
                 <button
                   type="submit"
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-lg text-sm transition-colors shadow-xs flex items-center justify-center gap-1.5"
+                  className="w-full bg-[#1E4D2B] hover:bg-[#163820] text-[#FDFBF7] font-bold px-4 py-3 rounded-2xl text-sm transition-all shadow-[2px_2px_0px_#0B2F1B] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0B2F1B] flex items-center justify-center gap-1.5"
                 >
                   <Search className="w-4 h-4" />
                   <span className="md:hidden">Search</span>
@@ -335,21 +344,21 @@ export default async function Page({ searchParams }: PageProps) {
 
             {/* Active Filters & Reset Link */}
             {hasActiveFilters && (
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs text-slate-500">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="font-medium text-slate-700">Filters:</span>
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[#E8E0D2] text-xs text-[#665D4F]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-bold text-[#1C1917]">Active Filters:</span>
                   {q && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 font-medium">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#FFFDF9] text-[#24211D] border border-[#D5CBBA] font-semibold">
                       Query: &ldquo;{q}&rdquo;
                     </span>
                   )}
                   {role && role !== "all" && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 font-medium">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#E8F2EA] text-[#1E4D2B] border border-[#BED6C3] font-bold">
                       Role: {role}
                     </span>
                   )}
                   {city && city !== "all" && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#FAF3E8] text-[#524434] border border-[#E2D5C3] font-bold">
                       City: {city}
                     </span>
                   )}
@@ -357,7 +366,7 @@ export default async function Page({ searchParams }: PageProps) {
 
                 <Link
                   href="/"
-                  className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-medium hover:underline transition-colors"
+                  className="inline-flex items-center gap-1.5 text-[#1E4D2B] hover:text-[#163820] font-bold hover:underline transition-colors"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   Reset all filters
@@ -368,34 +377,34 @@ export default async function Page({ searchParams }: PageProps) {
         </div>
 
         {/* Results Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-          <p className="text-sm text-slate-600">
-            Showing <span className="font-semibold text-slate-900">{startPostIndex}</span> to{" "}
-            <span className="font-semibold text-slate-900">{endPostIndex}</span> of{" "}
-            <span className="font-semibold text-slate-900">{totalJobs}</span> fresher opportunities
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 px-1">
+          <p className="text-sm font-semibold text-[#5A5144]">
+            Showing <span className="font-black text-[#1C1917]">{startPostIndex}</span> to{" "}
+            <span className="font-black text-[#1C1917]">{endPostIndex}</span> of{" "}
+            <span className="font-black text-[#1E4D2B]">{totalJobs}</span> fresher opportunities
           </p>
-          <div className="text-xs text-slate-500">
-            Page <span className="font-medium text-slate-800">{page}</span> of {totalPages}
+          <div className="text-xs font-semibold text-[#786E60]">
+            Page <span className="font-black text-[#1C1917]">{page}</span> of {totalPages}
           </div>
         </div>
 
         {/* Job Listings Feed */}
         {posts.length === 0 ? (
           /* Empty State */
-          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-xs">
-            <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-[#FAF6EE] rounded-3xl border border-[#DFD6C6] p-12 text-center shadow-xs">
+            <div className="w-16 h-16 bg-[#E8F2EA] text-[#1E4D2B] border border-[#BED6C3] rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-[2px_2px_0px_#BED6C3]">
               <Search className="w-7 h-7" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900">No matching jobs found</h3>
-            <p className="mt-1.5 text-sm text-slate-500 max-w-md mx-auto">
+            <h3 className="text-xl font-black text-[#1C1917]">No matching jobs found</h3>
+            <p className="mt-2 text-sm text-[#665D4F] max-w-md mx-auto font-medium">
               We couldn&apos;t find any active listings matching your current search criteria. Try broadening your keywords
-              or resetting your filters.
+              or resetting role/city filters.
             </p>
             {hasActiveFilters && (
-              <div className="mt-5">
+              <div className="mt-6">
                 <Link
                   href="/"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-xs"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1E4D2B] text-white rounded-2xl text-sm font-bold hover:bg-[#163820] transition-all shadow-[2px_2px_0px_#0B2F1B]"
                 >
                   <RotateCcw className="w-4 h-4" />
                   Clear all filters
@@ -404,7 +413,7 @@ export default async function Page({ searchParams }: PageProps) {
             )}
           </div>
         ) : (
-          <div className="space-y-3.5">
+          <div className="space-y-4">
             {posts.map((post) => {
               const roleBadge = post.roleTag || "Early Career";
               const cityBadge = post.cityTag || post.locationRaw || "India";
@@ -412,39 +421,39 @@ export default async function Page({ searchParams }: PageProps) {
               return (
                 <div
                   key={post.id}
-                  className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-start justify-between gap-4 group"
+                  className="bg-[#FFFDF9] rounded-3xl border border-[#E5DEC9] p-5 sm:p-6 shadow-sm hover:shadow-md hover:border-[#1E4D2B]/50 transition-all flex flex-col sm:flex-row sm:items-start justify-between gap-4 group"
                 >
                   <div className="flex-1 min-w-0">
-                    {/* Top Meta Line: Company & Badges */}
-                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                      <div className="flex items-center gap-1.5 font-bold text-slate-900 text-sm">
-                        <Building2 className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+                    {/* Top Meta Line: Company & Source */}
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <div className="flex items-center gap-1.5 font-black text-[#1C1917] text-sm">
+                        <Building2 className="w-4 h-4 text-[#8C8070] group-hover:text-[#1E4D2B] transition-colors" />
                         <span>{post.company}</span>
                       </div>
-                      <span className="text-slate-300">•</span>
-                      <span className="text-xs px-2 py-0.5 rounded font-mono font-medium uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
+                      <span className="text-[#CFC4B3]">•</span>
+                      <span className="text-[11px] px-2.5 py-0.5 rounded-lg font-mono font-bold uppercase tracking-wider bg-[#F2ECE1] text-[#554C40] border border-[#DDD3C2]">
                         {post.source}
                       </span>
                       {post.isFresher && (
-                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-800 border border-amber-200">
-                          <Sparkles className="w-3 h-3 text-amber-500" />
+                        <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-[#FEF7D6] text-[#78590A] border border-[#ECD788]">
+                          <Sparkles className="w-3 h-3 text-[#B45309]" />
                           Fresher Friendly
                         </span>
                       )}
                     </div>
 
                     {/* Job Title */}
-                    <h2 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-snug">
+                    <h2 className="text-base sm:text-xl font-black text-[#1C1917] group-hover:text-[#1E4D2B] transition-colors leading-snug">
                       <a href={post.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
                         {post.title}
                       </a>
                     </h2>
 
-                    {/* Location & Role Badges */}
-                    <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                    {/* Location, Role & Date Badges */}
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
                       {/* Role Tag */}
                       <span
-                        className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-md border ${getRoleBadgeClasses(
+                        className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-xl border ${getRoleBadgeClasses(
                           post.roleTag
                         )}`}
                       >
@@ -454,7 +463,7 @@ export default async function Page({ searchParams }: PageProps) {
 
                       {/* City Tag */}
                       <span
-                        className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-md border ${getCityBadgeClasses(
+                        className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-xl border ${getCityBadgeClasses(
                           post.cityTag
                         )}`}
                       >
@@ -463,27 +472,27 @@ export default async function Page({ searchParams }: PageProps) {
                       </span>
 
                       {/* Posted Relative Date */}
-                      <span className="inline-flex items-center gap-1 text-xs text-slate-500 ml-1">
-                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#786E60] ml-1">
+                        <Calendar className="w-3.5 h-3.5 text-[#8C8070]" />
                         {formatJobDate(post.postedAt || post.firstSeenAt)}
                       </span>
                     </div>
 
                     {/* Description Snippet */}
                     {post.description && (
-                      <p className="mt-3 text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                      <p className="mt-3 text-xs sm:text-sm text-[#5A5144] line-clamp-2 leading-relaxed font-normal">
                         {post.description.slice(0, 240)}...
                       </p>
                     )}
                   </div>
 
-                  {/* Apply CTA Button */}
-                  <div className="sm:self-center shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 flex items-center">
+                  {/* Retro Green Apply Button */}
+                  <div className="sm:self-center shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#E8E0D2] flex items-center">
                     <a
                       href={post.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white font-semibold text-xs sm:text-sm rounded-lg border border-indigo-200 hover:border-transparent transition-all shadow-xs group/btn w-full sm:w-auto"
+                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#1E4D2B] hover:bg-[#163820] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-[2px_2px_0px_#0B2F1B] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0B2F1B] transition-all group/btn w-full sm:w-auto"
                     >
                       <span>Apply Now</span>
                       <ExternalLink className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
@@ -495,48 +504,50 @@ export default async function Page({ searchParams }: PageProps) {
           </div>
         )}
 
-        {/* Pagination Bar */}
+        {/* Retro Pagination Bar */}
         {totalPages > 1 && (
-          <div className="mt-8 pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-xs text-slate-500">
-              Showing page <span className="font-semibold text-slate-800">{page}</span> of {totalPages}
+          <div className="mt-9 pt-5 border-t border-[#E3DACB] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs font-bold text-[#665D4F]">
+              Showing page <span className="font-black text-[#1C1917]">{page}</span> of {totalPages}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               {/* Previous Page Link */}
               {page > 1 ? (
                 <Link
                   href={buildSearchUrl({ q, role, city }, page - 1)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl border border-[#D5CBBA] bg-[#FFFDF9] text-xs font-bold text-[#1E4D2B] hover:bg-[#E8F2EA] transition-all shadow-xs"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
                   Previous
                 </Link>
               ) : (
-                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-100 text-xs font-medium text-slate-400 cursor-not-allowed">
+                <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl border border-[#E5DEC9] bg-[#F2ECE1] text-xs font-bold text-[#A89D8E] cursor-not-allowed">
                   <ChevronLeft className="w-3.5 h-3.5" />
                   Previous
                 </span>
               )}
 
               {/* Page Numbers Indicator */}
-              <div className="flex items-center gap-1 px-2 text-xs font-medium text-slate-600">
-                <span className="px-2.5 py-1 rounded-md bg-indigo-600 text-white font-bold">{page}</span>
+              <div className="flex items-center gap-1.5 px-2 text-xs font-bold text-[#665D4F]">
+                <span className="px-3 py-1.5 rounded-xl bg-[#1E4D2B] text-white font-black shadow-xs">
+                  {page}
+                </span>
                 <span>/</span>
-                <span>{totalPages}</span>
+                <span className="font-bold">{totalPages}</span>
               </div>
 
               {/* Next Page Link */}
               {page < totalPages ? (
                 <Link
                   href={buildSearchUrl({ q, role, city }, page + 1)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl border border-[#D5CBBA] bg-[#FFFDF9] text-xs font-bold text-[#1E4D2B] hover:bg-[#E8F2EA] transition-all shadow-xs"
                 >
                   Next
                   <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               ) : (
-                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-100 text-xs font-medium text-slate-400 cursor-not-allowed">
+                <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl border border-[#E5DEC9] bg-[#F2ECE1] text-xs font-bold text-[#A89D8E] cursor-not-allowed">
                   Next
                   <ChevronRight className="w-3.5 h-3.5" />
                 </span>
@@ -546,14 +557,14 @@ export default async function Page({ searchParams }: PageProps) {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-6 mt-auto">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+      {/* Retro Footer */}
+      <footer className="border-t border-[#E3DACB] bg-[#F7F2E7] py-6 mt-auto">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-medium text-[#786E60]">
           <div>
-            Built with Next.js, Tailwind CSS, PostgreSQL (Drizzle ORM) &amp; Groq LLM for Beep.
+            Built with Next.js, Tailwind CSS, PostgreSQL &amp; Groq LLM for Beep.
           </div>
           <div className="flex items-center gap-4">
-            <span>Direct Public ATS Feeds</span>
+            <span className="font-bold text-[#1E4D2B]">Direct Public ATS Feeds</span>
             <span>•</span>
             <span>Zero Recruiter Scraping</span>
           </div>
