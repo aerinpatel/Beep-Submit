@@ -1,22 +1,12 @@
 import Link from "next/link";
 import { client } from "@/lib/db";
-import { ROLES, CITIES } from "@/lib/config";
-import {
-  Search,
-  MapPin,
-  Briefcase,
-  Building2,
-  ExternalLink,
-  Calendar,
-  Sparkles,
-  Clock,
-  RotateCcw,
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle2,
-  Layers,
-  Compass,
-} from "lucide-react";
+import { Search, RotateCcw } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
+import { Hero } from "@/components/Hero";
+import { SearchFilters } from "@/components/SearchFilters";
+import { JobCard, type JobPostItem } from "@/components/JobCard";
+import { Pagination } from "@/components/Pagination";
+import { Footer } from "@/components/Footer";
 
 // Server-side rendering - force dynamic since searchParams change per request
 export const dynamic = "force-dynamic";
@@ -30,117 +20,9 @@ interface PageProps {
   };
 }
 
-interface JobPost {
-  id: string;
-  source: string;
-  sourceId: string;
-  url: string;
-  canonicalUrl: string;
-  title: string;
-  company: string;
-  locationRaw: string;
-  description: string;
-  postedAt: string | null;
-  firstSeenAt: string;
-  lastSeenAt: string;
-  roleTag: string | null;
-  cityTag: string | null;
-  isFresher: boolean;
-  tagConfidence: number | null;
-}
-
 interface LatestRunInfo {
   startedAt: string;
   status: string;
-}
-
-/**
- * Format date into clean relative or absolute readable string
- */
-function formatJobDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return "Recently";
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return "Recently";
-
-  const now = new Date();
-  const diffHours = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffHours < 1) return "Just now";
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays}d ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-
-  return d.toLocaleDateString("en-IN", {
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function formatRelativeRunTime(dateStr: string | null | undefined): string {
-  if (!dateStr) return "Today";
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return "Recently";
-
-  return d.toLocaleString("en-IN", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-/**
- * Sharp Retro color classes for role badges
- */
-function getRoleBadgeClasses(role: string | null): string {
-  switch (role) {
-    case "Software Engineering":
-      return "bg-[#D1E7DD] text-[#0F5132] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]";
-    case "Data/ML":
-      return "bg-[#E0CFFC] text-[#432874] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]";
-    case "Design":
-      return "bg-[#F8D7DA] text-[#842029] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]";
-    case "Marketing":
-      return "bg-[#FFF3CD] text-[#664D03] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]";
-    case "Sales":
-      return "bg-[#D1E7DD] text-[#0A3622] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]";
-    case "Operations":
-      return "bg-[#CFF4FC] text-[#055160] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]";
-    case "Finance":
-      return "bg-[#E2F0D9] text-[#385723] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]";
-    case "Content":
-      return "bg-[#FFE5D0] text-[#8A3B00] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]";
-    case "HR":
-      return "bg-[#FCE2E6] text-[#7A1C2C] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]";
-    default:
-      return "bg-[#E9ECEF] text-[#495057] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]";
-  }
-}
-
-/**
- * Sharp Retro color classes for city badges
- */
-function getCityBadgeClasses(city: string | null): string {
-  if (city === "Remote") {
-    return "bg-[#D1E7DD] text-[#0F5132] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]";
-  }
-  return "bg-[#FFF3CD] text-[#594200] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]";
-}
-
-/**
- * Helper to construct search URL while preserving active params
- */
-function buildSearchUrl(baseParams: { q?: string; role?: string; city?: string }, targetPage: number): string {
-  const params = new URLSearchParams();
-  if (baseParams.q) params.set("q", baseParams.q);
-  if (baseParams.role && baseParams.role !== "all") params.set("role", baseParams.role);
-  if (baseParams.city && baseParams.city !== "all") params.set("city", baseParams.city);
-  if (targetPage > 1) params.set("page", targetPage.toString());
-
-  const str = params.toString();
-  return str ? `/?${str}` : "/";
 }
 
 export default async function Page({ searchParams }: PageProps) {
@@ -153,7 +35,7 @@ export default async function Page({ searchParams }: PageProps) {
 
   let totalJobs = 0;
   let totalPages = 1;
-  let posts: JobPost[] = [];
+  let posts: JobPostItem[] = [];
   let latestRun: LatestRunInfo | undefined;
   let dbError: string | null = null;
 
@@ -187,7 +69,7 @@ export default async function Page({ searchParams }: PageProps) {
       ORDER BY
         ${q ? client`rank DESC, first_seen_at DESC` : client`COALESCE(posted_at, first_seen_at) DESC`}
       LIMIT ${pageSize} OFFSET ${offset}
-    `) as unknown as JobPost[];
+    `) as unknown as JobPostItem[];
 
     // 3. Fetch latest pipeline run information
     const [run] = (await client`
@@ -203,94 +85,21 @@ export default async function Page({ searchParams }: PageProps) {
     console.error("[Web UI] Database error during page render:", dbError);
   }
 
-  // 4. Determine if any filters are active
   const hasActiveFilters = Boolean(q || (role && role !== "all") || (city && city !== "all"));
-
   const startPostIndex = totalJobs === 0 ? 0 : offset + 1;
   const endPostIndex = Math.min(offset + pageSize, totalJobs);
 
   return (
     <div className="min-h-screen bg-[#FBF8F2] text-[#1C1917] flex flex-col font-sans selection:bg-[#1E4D2B] selection:text-white">
-      {/* Sharp Retro Navigation Header */}
-      <header className="border-b-2 border-[#1C1917] bg-[#F7F2E7] sticky top-0 z-30 shadow-xs">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <span className="w-9 h-9 rounded-none bg-[#1E4D2B] text-white font-black text-xl flex items-center justify-center border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917] group-hover:translate-x-[1px] group-hover:translate-y-[1px] group-hover:shadow-[1px_1px_0px_#1C1917] transition-all">
-                B
-              </span>
-              <div>
-                <span className="text-2xl font-black tracking-tight text-[#1C1917] group-hover:text-[#1E4D2B] transition-colors">
-                  Beep
-                </span>
-                <span className="text-[11px] font-black uppercase tracking-wider text-[#0F5132] ml-2 px-2 py-0.5 rounded-none bg-[#D1E7DD] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]">
-                  Freshers
-                </span>
-              </div>
-            </Link>
-            <span className="hidden sm:inline-block text-[#1C1917] font-black">|</span>
-            <span className="hidden sm:inline-block text-xs font-bold uppercase tracking-wider text-[#5A5144]">
-              India Early Career &amp; Internships
-            </span>
-          </div>
+      {/* 1. Navbar */}
+      <Navbar latestRun={latestRun} />
 
-          <div className="flex items-center gap-3 text-xs self-end sm:self-center font-bold">
-            <div className="flex items-center gap-1.5 bg-[#D1E7DD] text-[#0F5132] px-3 py-1 rounded-none border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]">
-              <span className="w-2 h-2 bg-[#1E4D2B] animate-pulse rounded-none" />
-              <span>LIVE INGEST</span>
-            </div>
-            {latestRun && (
-              <div className="flex items-center gap-1.5 text-[#1C1917] bg-[#FFFDF9] px-2.5 py-1 rounded-none border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]">
-                <Clock className="w-3.5 h-3.5 text-[#1E4D2B]" />
-                <span>Updated {formatRelativeRunTime(latestRun.startedAt)}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      {/* 2. Hero Section */}
+      <Hero totalJobs={totalJobs} />
 
-      {/* Sharp Retro Hero Section */}
-      <section className="bg-[#FAF6EE] border-b-2 border-[#1C1917] relative">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-9 pb-8">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none bg-[#D1E7DD] text-[#0F5132] border-2 border-[#1C1917] text-xs font-black uppercase tracking-wider mb-4 shadow-[2px_2px_0px_#1C1917]">
-              <Compass className="w-3.5 h-3.5" />
-              Direct Public ATS Postings Only
-            </div>
-            <h1 className="text-3xl sm:text-5xl font-black text-[#1C1917] tracking-tight leading-[1.12]">
-              Curated Fresher &amp; Internship Jobs in India
-            </h1>
-            <p className="mt-3 text-base sm:text-lg text-[#463E33] leading-relaxed font-semibold">
-              Real 0–1 year and internship listings fetched daily from verified public ATS boards (Greenhouse, Lever, Ashby).
-              Deduplicated in layers with pg_trgm and LLM-tagged.
-            </p>
-          </div>
-
-          {/* Sharp Highlight Pills Bar */}
-          <div className="mt-7 flex flex-wrap items-center gap-3 text-xs sm:text-sm text-[#1C1917]">
-            <div className="flex items-center gap-2 bg-[#FFFDF9] border-2 border-[#1C1917] px-3.5 py-1.5 rounded-none shadow-[3px_3px_0px_#1C1917] font-black">
-              <Briefcase className="w-4 h-4 text-[#1E4D2B]" />
-              <span>{totalJobs} Active Openings</span>
-            </div>
-            <div className="flex items-center gap-2 bg-[#FFFDF9] border-2 border-[#1C1917] px-3.5 py-1.5 rounded-none shadow-[3px_3px_0px_#1C1917] font-black">
-              <Layers className="w-4 h-4 text-[#1E4D2B]" />
-              <span>Deduplicated in Layers</span>
-            </div>
-            <div className="flex items-center gap-2 bg-[#FFFDF9] border-2 border-[#1C1917] px-3.5 py-1.5 rounded-none shadow-[3px_3px_0px_#1C1917] font-black">
-              <Sparkles className="w-4 h-4 text-[#B45309]" />
-              <span>LLM Tagged (Role &amp; City)</span>
-            </div>
-            <div className="flex items-center gap-2 bg-[#FFFDF9] border-2 border-[#1C1917] px-3.5 py-1.5 rounded-none shadow-[3px_3px_0px_#1C1917] font-black">
-              <CheckCircle2 className="w-4 h-4 text-[#1E4D2B]" />
-              <span>Active within 7 days</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Main Content Area */}
+      {/* 3. Main Content & Search */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
-        {/* Database Offline Notice */}
+        {/* Database Diagnostic Notice */}
         {dbError && (
           <div className="mb-6 bg-[#FEF3C7] border-2 border-[#1C1917] rounded-none p-5 text-[#78350F] text-sm font-bold shadow-[4px_4px_0px_#1C1917]">
             <p className="text-base font-black">⚠️ Database Connection Required</p>
@@ -303,101 +112,10 @@ export default async function Page({ searchParams }: PageProps) {
           </div>
         )}
 
-        {/* Sharp Retro Search & Filter Bar */}
-        <div className="bg-[#FAF6EE] rounded-none border-2 border-[#1C1917] p-5 sm:p-6 mb-7 shadow-[6px_6px_0px_#1C1917]">
-          <form method="GET" action="/" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
-              {/* Search Query Input */}
-              <div className="md:col-span-5 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5A5144]" />
-                <input
-                  type="text"
-                  name="q"
-                  defaultValue={q}
-                  placeholder="Search keywords, skills, roles... (e.g. Backend, React, Intern)"
-                  className="w-full pl-11 pr-4 py-3 bg-[#FFFDF9] border-2 border-[#1C1917] rounded-none text-sm font-bold text-[#1C1917] placeholder:text-[#8C8070] focus:outline-none focus:bg-white shadow-[2px_2px_0px_#1C1917] transition-all"
-                />
-              </div>
+        {/* Search & Filter Controls */}
+        <SearchFilters q={q} role={role} city={city} />
 
-              {/* Role Filter Dropdown */}
-              <div className="md:col-span-3">
-                <select
-                  name="role"
-                  defaultValue={role || "all"}
-                  className="w-full px-4 py-3 bg-[#FFFDF9] border-2 border-[#1C1917] rounded-none text-sm font-bold text-[#1C1917] focus:outline-none focus:bg-white cursor-pointer shadow-[2px_2px_0px_#1C1917] transition-all"
-                >
-                  <option value="all">All Roles (Any)</option>
-                  {ROLES.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* City Filter Dropdown */}
-              <div className="md:col-span-3">
-                <select
-                  name="city"
-                  defaultValue={city || "all"}
-                  className="w-full px-4 py-3 bg-[#FFFDF9] border-2 border-[#1C1917] rounded-none text-sm font-bold text-[#1C1917] focus:outline-none focus:bg-white cursor-pointer shadow-[2px_2px_0px_#1C1917] transition-all"
-                >
-                  <option value="all">All Locations (Any)</option>
-                  {CITIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Sharp Green Action Button */}
-              <div className="md:col-span-1 flex items-stretch">
-                <button
-                  type="submit"
-                  className="w-full bg-[#1E4D2B] hover:bg-[#163820] text-white font-black px-4 py-3 border-2 border-[#1C1917] rounded-none shadow-[3px_3px_0px_#1C1917] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_#1C1917] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_#1C1917] transition-all flex items-center justify-center gap-1.5"
-                >
-                  <Search className="w-4 h-4" />
-                  <span className="md:hidden">Search</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Active Filters & Reset Link */}
-            {hasActiveFilters && (
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t-2 border-[#1C1917] text-xs font-bold text-[#463E33]">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-black text-[#1C1917] uppercase">Active Filters:</span>
-                  {q && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-none bg-[#FFFDF9] text-[#1C1917] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917] font-black">
-                      Query: &ldquo;{q}&rdquo;
-                    </span>
-                  )}
-                  {role && role !== "all" && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-none bg-[#D1E7DD] text-[#0F5132] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917] font-black">
-                      Role: {role}
-                    </span>
-                  )}
-                  {city && city !== "all" && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-none bg-[#FFF3CD] text-[#594200] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917] font-black">
-                      City: {city}
-                    </span>
-                  )}
-                </div>
-
-                <Link
-                  href="/"
-                  className="inline-flex items-center gap-1.5 text-[#1E4D2B] hover:text-[#163820] font-black uppercase tracking-wider hover:underline transition-colors"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  Reset all filters
-                </Link>
-              </div>
-            )}
-          </form>
-        </div>
-
-        {/* Results Header */}
+        {/* Results Count Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 px-1">
           <p className="text-sm font-bold text-[#463E33]">
             Showing <span className="font-black text-[#1C1917]">{startPostIndex}</span> to{" "}
@@ -411,7 +129,6 @@ export default async function Page({ searchParams }: PageProps) {
 
         {/* Job Listings Feed */}
         {posts.length === 0 ? (
-          /* Empty State */
           <div className="bg-[#FAF6EE] rounded-none border-2 border-[#1C1917] p-12 text-center shadow-[6px_6px_0px_#1C1917]">
             <div className="w-16 h-16 bg-[#D1E7DD] text-[#0F5132] border-2 border-[#1C1917] rounded-none flex items-center justify-center mx-auto mb-4 shadow-[3px_3px_0px_#1C1917]">
               <Search className="w-7 h-7" />
@@ -435,162 +152,18 @@ export default async function Page({ searchParams }: PageProps) {
           </div>
         ) : (
           <div className="space-y-4">
-            {posts.map((post) => {
-              const roleBadge = post.roleTag || "Early Career";
-              const cityBadge = post.cityTag || post.locationRaw || "India";
-
-              return (
-                <div
-                  key={post.id}
-                  className="bg-[#FFFDF9] rounded-none border-2 border-[#1C1917] p-5 sm:p-6 shadow-[5px_5px_0px_#1C1917] hover:shadow-[7px_7px_0px_#1C1917] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all flex flex-col sm:flex-row sm:items-start justify-between gap-4 group"
-                >
-                  <div className="flex-1 min-w-0">
-                    {/* Top Meta Line: Company & Source */}
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <div className="flex items-center gap-1.5 font-black text-[#1C1917] text-sm">
-                        <Building2 className="w-4 h-4 text-[#1E4D2B]" />
-                        <span>{post.company}</span>
-                      </div>
-                      <span className="text-[#1C1917] font-black">•</span>
-                      <span className="text-[11px] px-2.5 py-0.5 rounded-none font-mono font-black uppercase tracking-wider bg-[#E9ECEF] text-[#1C1917] border-2 border-[#1C1917]">
-                        {post.source}
-                      </span>
-                      {post.isFresher && (
-                        <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-none font-black uppercase bg-[#FFF3CD] text-[#664D03] border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]">
-                          <Sparkles className="w-3 h-3 text-[#B45309]" />
-                          Fresher Friendly
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Job Title */}
-                    <h2 className="text-base sm:text-xl font-black text-[#1C1917] group-hover:text-[#1E4D2B] transition-colors leading-snug">
-                      <a href={post.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                        {post.title}
-                      </a>
-                    </h2>
-
-                    {/* Location, Role & Date Badges */}
-                    <div className="mt-3 flex flex-wrap items-center gap-2.5">
-                      {/* Role Tag */}
-                      <span
-                        className={`inline-flex items-center gap-1.5 text-xs font-black px-3 py-1 rounded-none ${getRoleBadgeClasses(
-                          post.roleTag
-                        )}`}
-                      >
-                        <Briefcase className="w-3.5 h-3.5" />
-                        {roleBadge}
-                      </span>
-
-                      {/* City Tag */}
-                      <span
-                        className={`inline-flex items-center gap-1.5 text-xs font-black px-3 py-1 rounded-none ${getCityBadgeClasses(
-                          post.cityTag
-                        )}`}
-                      >
-                        <MapPin className="w-3.5 h-3.5" />
-                        {cityBadge}
-                      </span>
-
-                      {/* Posted Relative Date */}
-                      <span className="inline-flex items-center gap-1 text-xs font-bold text-[#5A5144] ml-1 bg-[#EFE9DC] px-2 py-0.5 border border-[#1C1917] rounded-none">
-                        <Calendar className="w-3.5 h-3.5 text-[#1C1917]" />
-                        {formatJobDate(post.postedAt || post.firstSeenAt)}
-                      </span>
-                    </div>
-
-                    {/* Description Snippet */}
-                    {post.description && (
-                      <p className="mt-3 text-xs sm:text-sm text-[#463E33] line-clamp-2 leading-relaxed font-medium">
-                        {post.description.slice(0, 240)}...
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Sharp Retro Green Apply Button */}
-                  <div className="sm:self-center shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#1C1917] flex items-center">
-                    <a
-                      href={post.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#1E4D2B] hover:bg-[#163820] text-white font-black text-xs sm:text-sm rounded-none border-2 border-[#1C1917] shadow-[3px_3px_0px_#1C1917] hover:shadow-[4px_4px_0px_#1C1917] hover:translate-x-[-1px] hover:translate-y-[-1px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_#1C1917] transition-all group/btn w-full sm:w-auto"
-                    >
-                      <span>APPLY NOW</span>
-                      <ExternalLink className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
-                    </a>
-                  </div>
-                </div>
-              );
-            })}
+            {posts.map((post) => (
+              <JobCard key={post.id} post={post} />
+            ))}
           </div>
         )}
 
-        {/* Sharp Retro Pagination Bar */}
-        {totalPages > 1 && (
-          <div className="mt-9 pt-5 border-t-2 border-[#1C1917] flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-xs font-black text-[#463E33]">
-              SHOWING PAGE <span className="text-[#1C1917]">{page}</span> OF {totalPages}
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* Previous Page Link */}
-              {page > 1 ? (
-                <Link
-                  href={buildSearchUrl({ q, role, city }, page - 1)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-none border-2 border-[#1C1917] bg-[#FFFDF9] text-xs font-black text-[#1C1917] shadow-[3px_3px_0px_#1C1917] hover:bg-[#D1E7DD] hover:translate-x-[-1px] hover:translate-y-[-1px] active:translate-x-[2px] active:translate-y-[2px] transition-all"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                  PREVIOUS
-                </Link>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-none border-2 border-[#8C8070] bg-[#E9ECEF] text-xs font-black text-[#8C8070] cursor-not-allowed">
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                  PREVIOUS
-                </span>
-              )}
-
-              {/* Page Numbers Indicator */}
-              <div className="flex items-center gap-1.5 text-xs font-black text-[#1C1917]">
-                <span className="px-3.5 py-1.5 rounded-none bg-[#1E4D2B] text-white border-2 border-[#1C1917] shadow-[2px_2px_0px_#1C1917]">
-                  {page}
-                </span>
-                <span>/</span>
-                <span>{totalPages}</span>
-              </div>
-
-              {/* Next Page Link */}
-              {page < totalPages ? (
-                <Link
-                  href={buildSearchUrl({ q, role, city }, page + 1)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-none border-2 border-[#1C1917] bg-[#FFFDF9] text-xs font-black text-[#1C1917] shadow-[3px_3px_0px_#1C1917] hover:bg-[#D1E7DD] hover:translate-x-[-1px] hover:translate-y-[-1px] active:translate-x-[2px] active:translate-y-[2px] transition-all"
-                >
-                  NEXT
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-none border-2 border-[#8C8070] bg-[#E9ECEF] text-xs font-black text-[#8C8070] cursor-not-allowed">
-                  NEXT
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </span>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Pagination Bar */}
+        <Pagination page={page} totalPages={totalPages} q={q} role={role} city={city} />
       </main>
 
-      {/* Sharp Retro Footer */}
-      <footer className="border-t-2 border-[#1C1917] bg-[#F7F2E7] py-6 mt-auto">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-bold text-[#5A5144]">
-          <div>
-            Built with Next.js, Tailwind CSS, PostgreSQL &amp; Groq LLM for Beep.
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="font-black text-[#1E4D2B] uppercase">Direct Public ATS Feeds</span>
-            <span>•</span>
-            <span className="font-black text-[#1C1917] uppercase">Zero Recruiter Scraping</span>
-          </div>
-        </div>
-      </footer>
+      {/* 4. Footer */}
+      <Footer />
     </div>
   );
 }
