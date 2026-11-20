@@ -3,7 +3,6 @@
 // Layer (b): Fuzzy match via pg_trgm title similarity > 0.85 within the same company
 // Flags duplicates with is_duplicate_of without deleting records
 
-import { sql } from "drizzle-orm";
 import { client } from "./db";
 import type { NormalizedPost } from "./types";
 import { CONFIG } from "./config";

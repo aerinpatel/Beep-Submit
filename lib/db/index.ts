@@ -1,7 +1,6 @@
-import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import * as schema from "./schema";
 import * as dotenv from "dotenv";
+import { prisma } from "./prisma";
 
 dotenv.config();
 
@@ -18,5 +17,5 @@ const client = postgres(connectionString, {
   connect_timeout: 10,
 });
 
-export const db = drizzle(client, { schema });
-export { client };
+export { client, prisma };
+export * from "./jobs";

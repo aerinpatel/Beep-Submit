@@ -1,6 +1,6 @@
 # Beep Fresher Jobs India — Live Web Tool & Pipeline
 
-> A production-grade, automated web platform and data ingestion pipeline collecting, deduplicating, LLM-tagging, and indexing 200+ real fresher and internship jobs in India from public ATS sources. Built with **Next.js 14 (App Router)**, **PostgreSQL (Drizzle ORM)**, **Tailwind CSS**, and **Groq LLM (`openai/gpt-oss-20b`)**.
+> A production-grade, automated web platform and data ingestion pipeline collecting, deduplicating, LLM-tagging, and indexing 200+ real fresher and internship jobs in India from public ATS sources. Built with **Next.js 14 (App Router)**, **PostgreSQL (Prisma ORM)**, **Tailwind CSS**, and **Groq LLM (`openai/gpt-oss-20b`)**.
 
 ---
 
