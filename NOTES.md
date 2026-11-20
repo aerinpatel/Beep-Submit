@@ -102,3 +102,32 @@ This document records issues, root causes, and fixes encountered during the buil
 - **Fix**: Relied on `contentHash` caching to retain tags across runs, and configured polite delays/backoff between LLM batch requests.
 
 ---
+
+### Issue 11: Server Component Rendering Error with Unhandled ECONNREFUSED
+
+- **Symptom**: Web UI failed to render with generic Next.js runtime error: `1 of 1 error Next.js (14.2.18) Unhandled Runtime Error: An error occurred in the Server Components render but no message was provided` at `app/page.tsx:155`.
+- **What I tried**: Inspecting terminal logs for the running Next.js dev server.
+- **Root cause**: The Docker PostgreSQL container (`beep-db`) was temporarily stopped or unreachable, causing raw database queries inside the Server Component to fail with `ECONNREFUSED` without a contextual user-facing error boundary.
+- **Fix**: Wrapped database querying inside a structured `try / catch` error boundary, and added a retro diagnostic notice in `app/page.tsx` that alerts the developer to start the database container (`docker compose up -d db`) while preventing page crashes.
+
+---
+
+### Issue 12: Monolithic Page Component Coupling Data and Presentation
+
+- **Symptom**: `app/page.tsx` expanded to over 600 lines containing raw SQL queries, UI templates, hero markup, badge formatters, and pagination controls in a single monolithic file.
+- **What I tried**: Maintaining everything in one page component.
+- **Root cause**: Monolithic component structures reduce code readability, make unit testing cumbersome, and create tight coupling between rendering and database logic.
+- **Fix**: Modularized `app/page.tsx` into concise, reusable components (`Navbar`, `Hero`, `SearchFilters`, `JobCard`, `Pagination`, `Footer`) in `components/`, reducing `app/page.tsx` down to under 100 clean lines.
+
+---
+
+### Issue 13: Direct Raw SQL Queries in Server Component Migrated to Prisma ORM
+
+- **Symptom**: Raw PostgreSQL string queries with tagged template literals were embedded directly in UI page components (`app/page.tsx`), creating potential maintenance hazards and tight coupling to specific SQL syntax.
+- **What I tried**: Keeping raw SQL queries in `app/page.tsx`.
+- **Root cause**: Lack of an ORM abstraction layer made typed data access, relation handling, and schema introspection difficult to manage in the web UI.
+- **Fix**: 
+  1. Configured Prisma ORM (`prisma/schema.prisma`) with models `Post`, `Run`, and `LlmUsage`, mapping snake_case PostgreSQL columns to idiomatic camelCase TypeScript properties.
+  2. Created singleton Prisma client (`lib/db/prisma.ts`) preventing multiple client instances in Next.js development mode.
+  3. Created dedicated Prisma data service (`lib/db/jobs.ts`) encapsulating `getJobs()`, using `prisma.post.count()` and `prisma.post.findMany()` for filtered listings and `prisma.$queryRaw` for PostgreSQL full-text `tsvector` ranking.
+  4. Fully removed all raw SQL strings from `app/page.tsx`.
